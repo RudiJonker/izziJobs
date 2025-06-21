@@ -1,0 +1,12 @@
+import React from 'react';
+import { View, Text } from 'react-native';
+import { styles } from '../theme/styles';
+
+export default function CalendarScreen({ route }) {
+  const { userId } = route.params;
+  return (
+    <View style={styles.container}>
+      <Text>Calendar Screen (User ID: {userId})</Text>
+    </View>
+  );
+}
