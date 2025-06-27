@@ -1,19 +1,11 @@
-const submitRating = async (jobSeekerId, rating) => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    alert("Please log in to rate.");
-    return;
-  }
-  try {
-    const { error } = await supabase
-      .from('ratings')
-      .insert({ employer_id: user.id, job_seeker_id, rating });
-    if (error) {
-      alert(`Rating error: ${error.message}`);
-    } else {
-      alert("Rating submitted successfully!");
-    }
-  } catch (error) {
-    alert(`Error: ${error.message}`);
-  }
-};
+import React from 'react';
+import { View, Text } from 'react-native';
+
+export default function RatingScreen({ route }) {
+  const { userId } = route.params || {};
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Rating Screen (Placeholder) - User ID: {userId || 'Not provided'}</Text>
+    </View>
+  );
+}

@@ -165,13 +165,16 @@ export default function JobSeekerProfileScreen({ route }) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={[styles.scrollContent, { justifyContent: 'center' }]}>
       {/* Removed <Text style={styles.title}>Job Seeker Profile</Text> */}
-      <TouchableOpacity onPress={pickImage} style={styles.profilePicContainer}>
-        <Image
-          source={profile.profile_pic ? { uri: profile.profile_pic } : { uri: '../../assets/default-avatar.png' }}
-          style={styles.profilePic}
-          onError={(e) => console.log('Image Load Error:', e.nativeEvent.error)}
-        />
-      </TouchableOpacity>
+      <TouchableOpacity onPress={pickImage} style={[styles.profilePicContainer, { marginTop: 20 }]}>
+  <Image
+    source={profile.profile_pic ? { uri: profile.profile_pic } : require('../../assets/default-avatar.png')}
+    style={styles.profilePic}
+    onError={(e) => {
+      console.log('Image Load Error:', e.nativeEvent.error);
+      setProfile((prev) => ({ ...prev, profile_pic: require('../../assets/default-avatar.png') }));
+    }}
+  />
+</TouchableOpacity>
       <TextInput
         label="Name"
         value={profile.name}

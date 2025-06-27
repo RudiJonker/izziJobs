@@ -3,15 +3,14 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../utils/supabaseClient';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { styles } from '../theme/styles'; // Ensure this file exists
+import { styles } from '../theme/styles';
 
-export default function ChatScreen() {
+export default function ChatScreen({ route }) {
   const navigation = useNavigation();
-  const route = useRoute();
-  const { jobId, jobSeekerId, jobTitle } = route.params || {};
+  const { userId, jobId, jobSeekerId, jobTitle } = route.params || {}; // Added userId
   const [message, setMessage] = React.useState('');
   const [locationLink, setLocationLink] = React.useState('');
-  const [messages, setMessages] = React.useState([]); // Placeholder for your message data
+  const [messages, setMessages] = React.useState([]);
   const [canChat, setCanChat] = React.useState(false);
   const [jobCompleted, setJobCompleted] = React.useState(false);
 
@@ -29,7 +28,6 @@ export default function ChatScreen() {
     };
     checkJobStatus();
 
-    // Placeholder: Fetch messages
     const fetchMessages = async () => {
       const { data } = await supabase
         .from('messages')
@@ -63,12 +61,9 @@ export default function ChatScreen() {
 
   const sendLocation = async () => {
     if (!canChat) return;
-    // Simulate pin drop (replace with actual geolocation or manual input)
     const latitude = -26.2041; // Example: Pretoria, SA
     const longitude = 28.0473;
-    // Generate Google Maps URL (WhatsApp-style)
     const googleMapsLink = `https://maps.google.com/?q=${latitude},${longitude}`;
-    // Optionally, save to job_locations (if needed)
     await supabase
       .from('job_locations')
       .insert({ job_id: jobId, latitude, longitude });

@@ -1,12 +1,11 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { styles } from '../theme/styles'; // Updated path
 
 export default function ListOfJobsScreen({ route }) {
-  const { userId } = route.params;
+  const { userId } = route.params || {};
   return (
-    <View style={styles.container}>
-      <Text>Job Listings (User ID: {userId})</Text>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>List of Jobs Screen (Placeholder) - User ID: {userId || 'Not provided'}</Text>
     </View>
   );
 }

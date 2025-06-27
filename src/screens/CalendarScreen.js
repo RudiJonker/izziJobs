@@ -1,12 +1,11 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { styles } from '../theme/styles';
 
 export default function CalendarScreen({ route }) {
-  const { userId } = route.params;
+  const { userId } = route.params || {};
   return (
-    <View style={styles.container}>
-      <Text>Calendar Screen (User ID: {userId})</Text>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Calendar Screen (Placeholder) - User ID: {userId || 'Not provided'}</Text>
     </View>
   );
 }

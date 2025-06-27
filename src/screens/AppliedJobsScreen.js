@@ -1,11 +1,10 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 
-export default function WeatherScreen({ route }) {
-  const { userId } = route.params || {};
+export default function AppliedJobsScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Weather Screen (Placeholder) - User ID: {userId || 'Not provided'}</Text>
+      <Text>Applied Jobs Screen (Placeholder)</Text>
     </View>
   );
 }
