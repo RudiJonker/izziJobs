@@ -53,13 +53,13 @@ export default function DashboardScreen({ navigation }) {
   const { user } = useContext(UserContext);
   const isJobSeeker = user?.user_metadata?.role === 'job_seeker';
   const isEmployer = user?.user_metadata?.role === 'employer';
-  const rating = 3; // Placeholder rating
+  const rating = 3;
   const scrollX = useRef(new Animated.Value(Dimensions.get('window').width)).current;
   const screenWidth = Dimensions.get('window').width;
   const textWidth = screenWidth * 3.5;
 
   useEffect(() => {
-    const duration = 25000; // 25 seconds for slower scrolling
+    const duration = 25000;
     const animate = () => {
       scrollX.setValue(screenWidth);
       Animated.timing(scrollX, {
@@ -75,6 +75,14 @@ export default function DashboardScreen({ navigation }) {
   const jobSeekerBannerText = 'You are in the Top 10% of job Seekers in your community with 247 points - keep up the good work! ...... 123623 IzziJobs Users worldwide and growing!';
   const employerBannerText = 'You are managing top jobs in your community with 150 points - keep it up! ...... 123623 IzziJobs Users worldwide and growing!';
 
+  const navigateToPosting = () => {
+    navigation.navigate('PostingJobsScreen', { userId: user?.id });
+  };
+
+  const navigateToMyJobPosts = () => {
+    navigation.navigate('MyJobPosts', { userId: user?.id });
+  };
+
   if (isJobSeeker) {
     return (
       <View style={[styles.container, { backgroundColor: '#f5f7fa', flex: 1 }]}>
@@ -84,7 +92,6 @@ export default function DashboardScreen({ navigation }) {
           </Animated.View>
         </View>
         <ScrollView style={{ flex: 1, marginTop: 70 }} contentContainerStyle={[styles.scrollContent, { paddingHorizontal: 10 }]}>
-          {/* Top Row: Rank, Rating */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
             <View style={dashboardStyles.card}>
               <Icon name="crown" size={35} color="#333" style={dashboardStyles.icon} />
@@ -100,8 +107,6 @@ export default function DashboardScreen({ navigation }) {
               </View>
             </View>
           </View>
-
-          {/* Second Row: Weather, Calendar */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
             <TouchableOpacity onPress={() => navigation.navigate('WeatherScreen')}>
               <View style={dashboardStyles.card}>
@@ -116,8 +121,6 @@ export default function DashboardScreen({ navigation }) {
               </View>
             </TouchableOpacity>
           </View>
-
-          {/* Third Row: Unread, Earnings */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
             <View style={dashboardStyles.card}>
               <Icon name="chat" size={35} color="#007bff" style={dashboardStyles.icon} />
@@ -130,8 +133,6 @@ export default function DashboardScreen({ navigation }) {
               </View>
             </TouchableOpacity>
           </View>
-
-          {/* Bottom Row: Jobs, Applied */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
             <TouchableOpacity onPress={() => navigation.navigate('ListOfJobsScreen')}>
               <View style={dashboardStyles.card}>
@@ -160,7 +161,7 @@ export default function DashboardScreen({ navigation }) {
           </Animated.View>
         </View>
         <ScrollView style={{ flex: 1, marginTop: 70 }} contentContainerStyle={[styles.scrollContent, { paddingHorizontal: 10 }]}>
-          {/* Top Row: Weather, Calendar */}
+          {/* Row 1: Weather, Calendar */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
             <TouchableOpacity onPress={() => navigation.navigate('WeatherScreen')}>
               <View style={dashboardStyles.card}>
@@ -175,8 +176,7 @@ export default function DashboardScreen({ navigation }) {
               </View>
             </TouchableOpacity>
           </View>
-
-          {/* Second Row: Unread, Rating */}
+          {/* Row 2: Unread, Rating */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
             <View style={dashboardStyles.card}>
               <Icon name="chat" size={35} color="#007bff" style={dashboardStyles.icon} />
@@ -194,33 +194,33 @@ export default function DashboardScreen({ navigation }) {
               </View>
             </TouchableOpacity>
           </View>
-
-          {/* Third Row: Salaries, Question Mark */}
+          {/* Row 3: New Job, My Jobs */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
-            <TouchableOpacity onPress={() => navigation.navigate('SalariesPaid')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="cash" size={35} color="#6a1b9a" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Salaries</Text>
-              </View>
-            </TouchableOpacity>
-            <View style={dashboardStyles.card}>
-              <Icon name="help" size={35} color="#333" style={dashboardStyles.icon} />
-              <Text style={dashboardStyles.itemText}>?</Text>
-            </View>
-          </View>
-
-          {/* Bottom Row: Job Posts, Applicants */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-            <TouchableOpacity onPress={() => navigation.navigate('PostingJobsScreen')}>
+            <TouchableOpacity onPress={navigateToPosting}>
               <View style={dashboardStyles.card}>
                 <Icon name="briefcase" size={35} color="#48d22b" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Job Posts</Text>
+                <Text style={dashboardStyles.itemText}>New Job</Text>
               </View>
             </TouchableOpacity>
+            <TouchableOpacity onPress={navigateToMyJobPosts}>
+              <View style={dashboardStyles.card}>
+                <Icon name="briefcase-check" size={35} color="#2196f3" style={dashboardStyles.icon} />
+                <Text style={dashboardStyles.itemText}>My Jobs</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          {/* Row 4: Applicants, Salaries */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
             <TouchableOpacity onPress={() => navigation.navigate('ApplicantsScreen')}>
               <View style={dashboardStyles.card}>
                 <Icon name="account-group" size={35} color="#ff4500" style={dashboardStyles.icon} />
                 <Text style={dashboardStyles.itemText}>Applicants</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('SalariesPaid')}>
+              <View style={dashboardStyles.card}>
+                <Icon name="cash" size={35} color="#6a1b9a" style={dashboardStyles.icon} />
+                <Text style={dashboardStyles.itemText}>Salaries</Text>
               </View>
             </TouchableOpacity>
           </View>
