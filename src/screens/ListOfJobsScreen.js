@@ -41,6 +41,9 @@ export default function ListOfJobsScreen({ route }) {
           contentContainerStyle={styles.list}
         />
       )}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Dashboard')}>
+        <Text style={styles.backText}>Back to Dashboard</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -49,4 +52,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 10 },
   list: { paddingBottom: 20 },
   jobItem: { padding: 10, borderBottomWidth: 1, borderBottomColor: '#ccc' },
+  backButton: { marginTop: 20, padding: 10, backgroundColor: '#1E90FF', borderRadius: 5, alignItems: 'center', marginHorizontal: 20 }, // Added marginHorizontal: 20
+  backText: { color: '#fff', fontWeight: 'bold' },
 });

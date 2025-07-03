@@ -10,7 +10,8 @@ import AuthScreen from '../screens/AuthScreen';
 import JobSeekerProfileScreen from '../screens/JobSeekerProfileScreen';
 import EmployerProfileScreen from '../screens/EmployerProfileScreen';
 import ListOfJobsScreen from '../screens/ListOfJobsScreen';
-import AppliedJobsScreen from '../screens/AppliedJobsScreen';
+import AppliedJobsScreen from '../screens/AppliedJobsScreen'; // Add this import
+import AppliedJobDetailScreen from '../screens/AppliedJobDetailScreen'; // Add this import
 import ChatScreen from '../screens/ChatScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import DashboardScreen from '../screens/DashboardScreen';
@@ -22,7 +23,7 @@ import ApplicantsScreen from '../screens/ApplicantsScreen';
 import RatingScreen from '../screens/RatingScreen';
 import SalariesPaid from '../screens/SalariesPaid';
 import MyJobPostsScreen from '../screens/MyJobPostsScreen';
-import JobDetailScreen from '../screens/JobDetailScreen'; // Add this import
+import JobDetailScreen from '../screens/JobDetailScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
@@ -43,10 +44,15 @@ function HomeStack({ userId, role }) {
         options={{ title: 'Available Jobs' }}
       />
       <Stack.Screen
-        name="AppliedJobsScreen"
+        name="AppliedJobsScreen" // Add this screen
         component={AppliedJobsScreen}
         initialParams={{ userId }}
         options={{ title: 'Applied Jobs' }}
+      />
+      <Stack.Screen
+        name="AppliedJobDetailScreen" // Add this screen
+        component={AppliedJobDetailScreen}
+        options={{ title: 'Applied Job Details' }}
       />
       <Stack.Screen
         name="WeatherScreen"
@@ -93,12 +99,13 @@ function HomeStack({ userId, role }) {
       <Stack.Screen
         name="MyJobPosts"
         component={MyJobPostsScreen}
-        initialParams={{ userId }}
+        initialParams={userId}
         options={{ title: 'My Jobs' }}
       />
       <Stack.Screen
-        name="JobDetailScreen" // Add this screen
+        name="JobDetailScreen"
         component={JobDetailScreen}
+        initialParams={{ userId }}
         options={{ title: 'Job Details' }}
       />
     </Stack.Navigator>
@@ -248,6 +255,17 @@ export default function AppNavigator() {
           component={JobDetailScreen}
           initialParams={{ user }}
           options={{ title: 'Job Details' }}
+        />
+        <Stack.Screen
+          name="AppliedJobsScreen"
+          component={AppliedJobsScreen}
+          initialParams={{ user }}
+          options={{ title: 'Applied Jobs' }}
+        />
+        <Stack.Screen
+          name="AppliedJobDetailScreen"
+          component={AppliedJobDetailScreen}
+          options={{ title: 'Applied Job Details' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
