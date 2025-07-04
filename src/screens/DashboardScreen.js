@@ -1,237 +1,108 @@
-import React, { useContext, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { UserContext } from '../contexts/UserContext';
-import { styles } from '../theme/styles';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { supabase } from '../utils/supabaseClient';
 
-const dashboardStyles = StyleSheet.create({
-  card: {
-    padding: 10,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    marginBottom: 12,
-    width: 95,
-    height: 95,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#333',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  icon: {
-    marginBottom: 4,
-  },
-  itemText: {
-    fontSize: 11,
-    textAlign: 'center',
-  },
-  starRating: {
-    flexDirection: 'row',
-    marginTop: 4,
-  },
-  banner: {
-    height: 40,
-    backgroundColor: '#48d22b',
-    justifyContent: 'center',
-    paddingHorizontal: 0,
-    width: Dimensions.get('window').width,
-    position: 'absolute',
-    top: 30,
-    left: 0,
-    zIndex: 1,
-  },
-  bannerText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-});
-
-export default function DashboardScreen({ navigation }) {
-  const { user } = useContext(UserContext);
-  const isJobSeeker = user?.user_metadata?.role === 'job_seeker';
-  const isEmployer = user?.user_metadata?.role === 'employer';
-  const rating = 3;
-  const scrollX = useRef(new Animated.Value(Dimensions.get('window').width)).current;
-  const screenWidth = Dimensions.get('window').width;
-  const textWidth = screenWidth * 3.5;
+export default function DashboardScreen({ route }) {
+  const { userId, role } = route.params || {};
+  const navigation = useNavigation();
+  const [appliedCount, setAppliedCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const duration = 25000;
-    const animate = () => {
-      scrollX.setValue(screenWidth);
-      Animated.timing(scrollX, {
-        toValue: -textWidth,
-        duration,
-        useNativeDriver: true,
-        easing: Easing.linear,
-      }).start(() => animate());
-    };
-    animate();
-  }, [scrollX, textWidth, screenWidth]);
+    fetchAppliedCount();
+  }, [userId]);
 
-  const jobSeekerBannerText = 'You are in the Top 10% of job Seekers in your community with 247 points - keep up the good work! ...... 123623 IzziJobs Users worldwide and growing!';
-  const employerBannerText = 'You are managing top jobs in your community with 150 points - keep it up! ...... 123623 IzziJobs Users worldwide and growing!';
+  const fetchAppliedCount = async () => {
+    setLoading(true);
+    const user = (await supabase.auth.getUser()).data.user;
+    if (!user || role !== 'employer') return;
 
-  const navigateToPosting = () => {
-    navigation.navigate('PostingJobsScreen', { userId: user?.id });
+    try {
+      const { data: jobs, error: jobsError } = await supabase
+        .from('jobs')
+        .select('id')
+        .eq('employer_id', user.id);
+      if (jobsError) throw jobsError;
+
+      const jobIds = jobs.map(job => job.id);
+      if (jobIds.length === 0) {
+        setAppliedCount(0);
+        return;
+      }
+
+      const { count, error } = await supabase
+        .from('applications')
+        .select('*', { count: 'exact', head: true })
+        .in('job_id', jobIds)
+        .eq('status', 'pending');
+      if (error) throw error;
+
+      setAppliedCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching applied count:', error.message);
+      setAppliedCount(0);
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const navigateToMyJobPosts = () => {
-    navigation.navigate('MyJobPosts', { userId: user?.id });
-  };
-
-  if (isJobSeeker) {
-    return (
-      <View style={[styles.container, { backgroundColor: '#f5f7fa', flex: 1 }]}>
-        <View style={dashboardStyles.banner}>
-          <Animated.View style={{ transform: [{ translateX: scrollX }], width: textWidth }}>
-            <Text style={dashboardStyles.bannerText} numberOfLines={1}>{jobSeekerBannerText}</Text>
-          </Animated.View>
-        </View>
-        <ScrollView style={{ flex: 1, marginTop: 70 }} contentContainerStyle={[styles.scrollContent, { paddingHorizontal: 10 }]}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
-            <View style={dashboardStyles.card}>
-              <Icon name="crown" size={35} color="#333" style={dashboardStyles.icon} />
-              <Text style={dashboardStyles.itemText}>Rank</Text>
-            </View>
-            <View style={dashboardStyles.card}>
-              <Icon name="star" size={35} color="#ff9800" style={dashboardStyles.icon} />
-              <Text style={dashboardStyles.itemText}>Rating</Text>
-              <View style={dashboardStyles.starRating}>
-                {Array(5).fill().map((_, i) => (
-                  <Icon key={i} name={i < rating ? 'star' : 'star-outline'} size={15} color="#ff9800" />
-                ))}
-              </View>
-            </View>
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
-            <TouchableOpacity onPress={() => navigation.navigate('WeatherScreen')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="weather-partly-cloudy" size={35} color="#ffeb3b" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Weather</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('CalendarScreen')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="calendar" size={35} color="#4caf50" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Calendar</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
-            <View style={dashboardStyles.card}>
-              <Icon name="chat" size={35} color="#007bff" style={dashboardStyles.icon} />
-              <Text style={dashboardStyles.itemText}>Unread: 2</Text>
-            </View>
-            <TouchableOpacity onPress={() => navigation.navigate('EarningsStatementScreen')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="bank" size={35} color="#6a1b9a" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>2513</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-            <TouchableOpacity onPress={() => navigation.navigate('ListOfJobsScreen')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="briefcase" size={35} color="#ff4500" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Jobs</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('AppliedJobsScreen')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="file-document" size={35} color="#48d22b" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Applied</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </View>
-    );
-  }
-
-  if (isEmployer) {
-    return (
-      <View style={[styles.container, { backgroundColor: '#f5f7fa', flex: 1 }]}>
-        <View style={dashboardStyles.banner}>
-          <Animated.View style={{ transform: [{ translateX: scrollX }], width: textWidth }}>
-            <Text style={dashboardStyles.bannerText} numberOfLines={1}>{employerBannerText}</Text>
-          </Animated.View>
-        </View>
-        <ScrollView style={{ flex: 1, marginTop: 70 }} contentContainerStyle={[styles.scrollContent, { paddingHorizontal: 10 }]}>
-          {/* Row 1: Weather, Calendar */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
-            <TouchableOpacity onPress={() => navigation.navigate('WeatherScreen')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="weather-partly-cloudy" size={35} color="#ffeb3b" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Weather</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('CalendarScreen')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="calendar" size={35} color="#4caf50" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Calendar</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          {/* Row 2: Unread, Rating */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
-            <View style={dashboardStyles.card}>
-              <Icon name="chat" size={35} color="#007bff" style={dashboardStyles.icon} />
-              <Text style={dashboardStyles.itemText}>Unread: 2</Text>
-            </View>
-            <TouchableOpacity onPress={() => navigation.navigate('RatingScreen')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="star" size={35} color="#ff9800" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Rating</Text>
-                <View style={dashboardStyles.starRating}>
-                  {Array(5).fill().map((_, i) => (
-                    <Icon key={i} name={i < rating ? 'star' : 'star-outline'} size={15} color="#ff9800" />
-                  ))}
-                </View>
-              </View>
-            </TouchableOpacity>
-          </View>
-          {/* Row 3: New Job, My Jobs */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
-            <TouchableOpacity onPress={navigateToPosting}>
-              <View style={dashboardStyles.card}>
-                <Icon name="briefcase" size={35} color="#48d22b" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>New Job</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={navigateToMyJobPosts}>
-              <View style={dashboardStyles.card}>
-                <Icon name="briefcase-check" size={35} color="#2196f3" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>My Jobs</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          {/* Row 4: Applicants, Salaries */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-            <TouchableOpacity onPress={() => navigation.navigate('ApplicantsScreen')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="account-group" size={35} color="#ff4500" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Applicants</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('SalariesPaid')}>
-              <View style={dashboardStyles.card}>
-                <Icon name="cash" size={35} color="#6a1b9a" style={dashboardStyles.icon} />
-                <Text style={dashboardStyles.itemText}>Salaries</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </View>
-    );
-  }
 
   return (
-    <View style={[styles.container, { backgroundColor: '#f5f7fa', flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
-      <Text>Role not recognized. Please log in or check user metadata.</Text>
+    <View style={styles.container}>
+      {loading ? (
+        <Text>Loading...</Text>
+      ) : (
+        <>
+          {role === 'job_seeker' && (
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => navigation.navigate('AppliedJobsScreen')}
+            >
+              <Text style={styles.cardTitle}>Applied Jobs</Text>
+              <Text style={styles.cardText}>6 Applications</Text> {/* Static for now, will update dynamically */}
+            </TouchableOpacity>
+          )}
+          {role === 'employer' && (
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => navigation.navigate('ApplicantsScreen')}
+            >
+              <Text style={styles.cardTitle}>Applicants</Text>
+              <Text style={styles.cardText}>{appliedCount} Applications</Text>
+            </TouchableOpacity>
+          )}
+          {/* Other existing cards can remain as placeholders or functional links */}
+          <TouchableOpacity style={styles.card} onPress={() => {}}>
+            <Text style={styles.cardTitle}>Weather</Text>
+            <Text style={styles.cardText}>Placeholder</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.card} onPress={() => {}}>
+            <Text style={styles.cardTitle}>Calendar</Text>
+            <Text style={styles.cardText}>Placeholder</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.card} onPress={() => {}}>
+            <Text style={styles.cardTitle}>Earnings</Text>
+            <Text style={styles.cardText}>Placeholder</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 10, backgroundColor: '#f5f5f5' },
+  card: {
+    backgroundColor: '#fff',
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  cardText: { fontSize: 16, color: '#666' },
+});
